@@ -9,13 +9,13 @@ export default {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "720px",
+        "2xl": "1400px",
       },
     },
     extend: {
       fontFamily: {
-        heading: ["Arvo", "Georgia", "serif"],
-        body: ["Source Sans 3", "system-ui", "sans-serif"],
+        heading: ["Nunito", "system-ui", "sans-serif"],
+        body: ["Inter", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

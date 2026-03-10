@@ -4,47 +4,46 @@
 
 @layer base {
   :root {
-    /* Parchment background */
-    --background: 60 7% 95%;
-    --foreground: 0 0% 14%;
+    --background: 0 0% 96%;
+    --foreground: 0 0% 13%;
 
-    --card: 60 7% 95%;
-    --card-foreground: 0 0% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
 
-    --popover: 60 7% 95%;
-    --popover-foreground: 0 0% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
 
-    /* Cobalt Blue */
-    --primary: 215 100% 34%;
-    --primary-foreground: 60 7% 95%;
+    /* Jollibee Red */
+    --primary: 351 79% 49%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 60 4% 88%;
-    --secondary-foreground: 0 0% 14%;
+    /* Jollibee Yellow */
+    --accent: 43 100% 58%;
+    --accent-foreground: 0 0% 13%;
 
-    --muted: 60 4% 88%;
-    --muted-foreground: 0 0% 40%;
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 13%;
 
-    --accent: 60 4% 88%;
-    --accent-foreground: 0 0% 14%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Terracotta Red */
-    --destructive: 0 48% 46%;
-    --destructive-foreground: 60 7% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 14%;
-    --input: 0 0% 75%;
-    --ring: 215 100% 34%;
+    --border: 0 0% 90%;
+    --input: 0 0% 85%;
+    --ring: 351 79% 49%;
 
-    --radius: 0px;
+    --radius: 12px;
 
-    --sidebar-background: 60 7% 95%;
-    --sidebar-foreground: 0 0% 14%;
-    --sidebar-primary: 215 100% 34%;
-    --sidebar-primary-foreground: 60 7% 95%;
-    --sidebar-accent: 60 4% 88%;
-    --sidebar-accent-foreground: 0 0% 14%;
-    --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 215 100% 34%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 13%;
+    --sidebar-primary: 351 79% 49%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 43 100% 58%;
+    --sidebar-accent-foreground: 0 0% 13%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 351 79% 49%;
   }
 }
 
