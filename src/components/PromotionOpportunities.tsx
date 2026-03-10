@@ -32,9 +32,9 @@ export const PromotionOpportunities = () => (
                   🎯 {p.confidence}%
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 bg-green-50 text-green-700 rounded-lg px-3 py-2 text-sm font-bold">
+              <div className="flex items-center gap-1.5 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm font-bold">
                 💰 +{p.estimatedIncrease}%
-                <span className="text-xs font-normal text-green-600">est. sales increase</span>
+                <span className="text-xs font-normal text-muted-foreground">est. sales increase</span>
               </div>
               <button className="mt-auto w-full border-2 border-primary text-primary text-sm font-extrabold py-2.5 px-4 rounded-xl hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center gap-2">
                 Activate <ArrowRight className="w-4 h-4" />
