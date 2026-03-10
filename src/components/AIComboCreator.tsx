@@ -6,38 +6,53 @@ export const AIComboCreator = () => {
 
   return (
     <section className="mb-10">
-      <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="w-5 h-5 text-accent" />
-        <h2 className="text-xl font-bold">AI Combo Meal Creator</h2>
+      <div className="kiosk-section-title">
+        <div className="bg-accent/20 p-2 rounded-xl">
+          <Sparkles className="w-5 h-5 text-accent-foreground" />
+        </div>
+        <h2>✨ AI Combo Meal Creator</h2>
       </div>
       {!combo ? (
-        <div className="bg-card border rounded-xl p-8 text-center text-muted-foreground">
-          <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">Upload transaction data to generate AI-recommended combo meals.</p>
+        <div className="kiosk-empty">
+          <span className="text-5xl block mb-3 animate-float">🤖</span>
+          <p className="text-sm font-medium">AI engine is waiting for data</p>
+          <p className="text-xs mt-1">Upload transaction data to generate smart combo recommendations</p>
         </div>
       ) : (
-        <div className="relative overflow-hidden bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-primary-foreground shadow-lg">
-          <div className="absolute -top-6 -right-6 text-8xl opacity-10 select-none">🍗🍝🥤</div>
-          <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-2">AI Recommended Combo</p>
-          <h3 className="text-2xl font-black mb-1">{combo.items.join(" + ")}</h3>
-          <p className="text-sm opacity-90 mb-5">Based on strongest association rules in the dataset</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-            {[
-              { label: "Support", value: `${combo.support}%`, icon: BarChart3 },
-              { label: "Confidence", value: `${combo.confidence}%`, icon: Target },
-              { label: "Lift", value: `${combo.lift}`, icon: TrendingUp },
-              { label: "Est. Sales ↑", value: `+${combo.estimatedSalesIncrease}%`, icon: ArrowUpRight },
-            ].map((m) => (
-              <div key={m.label} className="bg-primary-foreground/15 rounded-lg p-3">
-                <m.icon className="w-4 h-4 mb-1 opacity-80" />
-                <p className="text-xs opacity-80">{m.label}</p>
-                <p className="text-lg font-bold">{m.value}</p>
-              </div>
-            ))}
+        <div className="promo-banner text-primary-foreground">
+          {/* Floating food decorations */}
+          <div className="absolute top-3 right-4 text-5xl opacity-15 animate-float z-0">🍗</div>
+          <div className="absolute bottom-3 right-20 text-4xl opacity-10 animate-float z-0" style={{ animationDelay: '1s' }}>🍝</div>
+          <div className="absolute top-6 right-24 text-3xl opacity-10 animate-float z-0" style={{ animationDelay: '2s' }}>🥤</div>
+
+          <div className="relative z-10">
+            <div className="kiosk-badge bg-accent text-accent-foreground mb-3">
+              <Sparkles className="w-3 h-3" /> AI RECOMMENDED
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-black mb-1">
+              {combo.items.join(" + ")}
+            </h3>
+            <p className="text-sm opacity-80 mb-6">Strongest association pattern in customer order data</p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { label: "Support", value: `${combo.support}%`, icon: BarChart3, emoji: "📊" },
+                { label: "Confidence", value: `${combo.confidence}%`, icon: Target, emoji: "🎯" },
+                { label: "Lift", value: `${combo.lift}`, icon: TrendingUp, emoji: "📈" },
+                { label: "Est. Sales ↑", value: `+${combo.estimatedSalesIncrease}%`, icon: ArrowUpRight, emoji: "💰" },
+              ].map((m) => (
+                <div key={m.label} className="bg-primary-foreground/10 backdrop-blur-sm rounded-xl p-3 border border-primary-foreground/10">
+                  <span className="text-lg block mb-1">{m.emoji}</span>
+                  <p className="text-xs opacity-70 font-medium">{m.label}</p>
+                  <p className="text-xl font-black">{m.value}</p>
+                </div>
+              ))}
+            </div>
+
+            <button className="bg-accent text-accent-foreground font-extrabold py-3 px-8 rounded-xl hover:bg-accent/90 transition-all hover:shadow-lg text-sm inline-flex items-center gap-2">
+              🚀 Launch This Combo
+            </button>
           </div>
-          <button className="bg-accent text-accent-foreground font-bold py-2.5 px-6 rounded-lg hover:bg-accent/90 transition-colors text-sm">
-            🚀 Launch This Combo
-          </button>
         </div>
       )}
     </section>

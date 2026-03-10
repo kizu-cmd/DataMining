@@ -9,9 +9,10 @@ import { AssociationRulesTable } from "@/components/AssociationRulesTable";
 import { UploadSection } from "@/components/UploadSection";
 
 const Index = () => (
-  <div className="min-h-screen bg-background">
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8">
+  <div className="min-h-screen">
+    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-6 sm:py-10">
       <DashboardHeader />
+      <UploadSection />
       <TrendingCombos />
       <AIComboCreator />
       <PromotionOpportunities />
@@ -19,7 +20,9 @@ const Index = () => (
       <ItemNetwork />
       <TopCombinationsChart />
       <AssociationRulesTable />
-      <UploadSection />
+      <footer className="text-center py-8 text-xs text-muted-foreground">
+        <p>🐝 Jollibee Market Basket Intelligence · Powered by AI</p>
+      </footer>
     </div>
   </div>
 );
