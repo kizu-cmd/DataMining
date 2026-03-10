@@ -1,9 +1,9 @@
 import { Activity, TrendingUp, Clock } from "lucide-react";
 
 const metrics = [
-  { label: "Total Transactions", value: "24,891", icon: Activity, color: "text-primary" },
-  { label: "Patterns Discovered", value: "147", icon: TrendingUp, color: "text-accent" },
-  { label: "Last Updated", value: "Mar 10, 2026 · 09:42 AM", icon: Clock, color: "text-muted-foreground" },
+  { label: "Total Transactions", value: "—", icon: Activity, color: "text-primary" },
+  { label: "Patterns Discovered", value: "—", icon: TrendingUp, color: "text-accent" },
+  { label: "Last Updated", value: "No data yet", icon: Clock, color: "text-muted-foreground" },
 ];
 
 export const DashboardHeader = () => (

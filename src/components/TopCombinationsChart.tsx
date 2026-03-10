@@ -8,19 +8,26 @@ export const TopCombinationsChart = () => (
       <BarChart3 className="w-5 h-5 text-primary" />
       <h2 className="text-xl font-bold">Top Item Combinations</h2>
     </div>
-    <div className="bg-card border rounded-xl p-5 shadow-sm">
-      <ResponsiveContainer width="100%" height={320}>
-        <BarChart data={topCombinations} layout="vertical" margin={{ left: 120, right: 20, top: 5, bottom: 5 }}>
-          <XAxis type="number" domain={[0, 50]} tick={{ fontSize: 12 }} unit="%" />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={120} />
-          <Tooltip formatter={(v: number) => `${v}%`} contentStyle={{ borderRadius: 8, fontSize: 13 }} />
-          <Bar dataKey="support" radius={[0, 6, 6, 0]}>
-            {topCombinations.map((_, i) => (
-              <Cell key={i} fill={i === 0 ? "hsl(351 79% 49%)" : "hsl(43 100% 58%)"} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    {topCombinations.length === 0 ? (
+      <div className="bg-card border rounded-xl p-8 text-center text-muted-foreground">
+        <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-40" />
+        <p className="text-sm">No combination data yet. Upload transaction data to see top combinations.</p>
+      </div>
+    ) : (
+      <div className="bg-card border rounded-xl p-5 shadow-sm">
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart data={topCombinations} layout="vertical" margin={{ left: 120, right: 20, top: 5, bottom: 5 }}>
+            <XAxis type="number" domain={[0, 50]} tick={{ fontSize: 12 }} unit="%" />
+            <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={120} />
+            <Tooltip formatter={(v: number) => `${v}%`} contentStyle={{ borderRadius: 8, fontSize: 13 }} />
+            <Bar dataKey="support" radius={[0, 6, 6, 0]}>
+              {topCombinations.map((_, i) => (
+                <Cell key={i} fill={i === 0 ? "hsl(351 79% 49%)" : "hsl(43 100% 58%)"} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    )}
   </section>
 );
