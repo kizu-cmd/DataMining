@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAnalysis } from "@/context/AnalysisContext";
-import { ShoppingCart, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export const SmartUpsell = () => {
   const [selected, setSelected] = useState("");
