@@ -5,7 +5,7 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-primary/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-8 flex items-center h-14 gap-6">
-        <span className="text-xl shrink-0">🍗</span>
+        
 
         <div className="flex items-center gap-1">
           <NavLink
