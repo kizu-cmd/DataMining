@@ -4,7 +4,7 @@ import jollibeeLogo from "@/assets/jollibee-logo.png";
 
 export function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b">
+    <nav className="sticky top-0 z-50 bg-primary backdrop-blur-md border-b border-primary/80">
       <div className="max-w-6xl mx-auto px-4 sm:px-8 flex items-center h-14 gap-6">
         <img src={jollibeeLogo} alt="Jollibee" className="h-8 object-contain" />
         <div className="flex items-center gap-1">
