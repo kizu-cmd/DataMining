@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, FileSpreadsheet, CheckCircle } from "lucide-react";
+import { Upload, Play, FileSpreadsheet, CheckCircle } from "lucide-react";
 import { useAnalysis } from "@/context/AnalysisContext";
 
 export const UploadSection = () => {
