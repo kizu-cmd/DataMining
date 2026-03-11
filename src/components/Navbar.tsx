@@ -27,6 +27,7 @@ export function Navbar() {
           </NavLink>
         </div>
       </div>
+      </div>
     </nav>
   );
 }
