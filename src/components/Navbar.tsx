@@ -1,12 +1,19 @@
 import { NavLink } from "@/components/NavLink";
 import { BarChart3, MonitorSmartphone } from "lucide-react";
-import jollibeeLogo from "@/assets/jollibee-logo.png";
 
 export function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 bg-card backdrop-blur-md border-b">
+    <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-primary/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-8 flex items-center h-14 gap-6">
-        <img src={jollibeeLogo} alt="Jollibee" className="h-8 object-contain" />
+        {/* Jollibee-themed text mark */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xl">🍗</span>
+          <span className="text-base font-extrabold tracking-tight">
+            <span className="text-primary">Market</span>
+            <span className="text-accent-foreground">Basket</span>
+          </span>
+        </div>
+
         <div className="flex items-center gap-1">
           <NavLink
             to="/"
