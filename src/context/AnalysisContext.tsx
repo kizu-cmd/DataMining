@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import { runApriori, parseCSV, type Rule, type FrequentItemset } from "@/lib/apriori";
+import { apiEnabled, runAnalysisOnServer, fetchAnalysis, type ApiAnalysisResult } from "@/lib/api";
 import type {
   MenuItem, ComboPattern, AssociationRule, Promotion,
   NetworkNode, NetworkEdge,
