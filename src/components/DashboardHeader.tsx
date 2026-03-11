@@ -17,9 +17,7 @@ export const DashboardHeader = () => {
     <header className="mb-10">
       <div className="promo-banner mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div className="relative z-10 flex items-center gap-4 flex-1">
-          <div className="bg-white rounded-xl p-2 shadow-md">
-            <img src={jollibeeLogo} alt="Jollibee" className="h-8 sm:h-10 object-contain" />
-          </div>
+          <img src={jollibeeLogo} alt="Jollibee" className="h-10 sm:h-12 object-contain" />
           <div className="text-primary-foreground">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-tight">
               Market Basket Intelligence
