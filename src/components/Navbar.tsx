@@ -1,5 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { BarChart3, MonitorSmartphone } from "lucide-react";
+import jollibeeImg from "@/assets/jollibee-mascot.png";
 
 export function Navbar() {
   return (
