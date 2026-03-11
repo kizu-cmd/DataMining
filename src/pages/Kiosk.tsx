@@ -79,13 +79,41 @@ export default function Kiosk() {
 
   const clearCart = () => setCart([]);
 
+  const loadSampleData = () => {
+    const sampleCSV = `transaction_id,items
+1,"Chickenjoy,Rice,Coke"
+2,"Chickenjoy,Rice,Jolly Spaghetti"
+3,"Burger Steak,Rice,Iced Tea"
+4,"Chickenjoy,Fries,Coke"
+5,"Jolly Spaghetti,Peach Mango Pie,Coke"
+6,"Chickenjoy,Rice,Peach Mango Pie"
+7,"Burger Steak,Rice,Coke,Fries"
+8,"Chickenjoy,Rice,Chocolate Sundae"
+9,"Jolly Palabok,Coke,Peach Mango Pie"
+10,"Chickenjoy,Jolly Spaghetti,Coke"
+11,"Chickenjoy,Rice,Iced Tea,Fries"
+12,"Burger Steak,Rice,Jolly Spaghetti"
+13,"Chickenjoy,Rice,Coke,Peach Mango Pie"
+14,"Fries,Coke,Chocolate Sundae"
+15,"Chickenjoy,Rice,Coke"
+16,"Jolly Spaghetti,Coke,Fries"
+17,"Chickenjoy,Rice,Peach Mango Pie,Iced Tea"
+18,"Burger Steak,Fries,Coke"
+19,"Chickenjoy,Rice,Jolly Palabok,Coke"
+20,"Chickenjoy,Rice,Coke,Chocolate Sundae"`;
+    runAnalysis(sampleCSV);
+  };
+
   if (!hasData) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-8 py-16">
         <div className="kiosk-empty">
           <span className="text-6xl block mb-4">🖥️</span>
           <h2 className="text-xl font-extrabold mb-2">Kiosk Not Available</h2>
-          <p className="text-sm">Upload transaction data on the Dashboard first to populate the kiosk menu with AI-powered suggestions.</p>
+          <p className="text-sm mb-4">Upload transaction data on the Dashboard first to populate the kiosk menu with AI-powered suggestions.</p>
+          <Button onClick={loadSampleData} className="font-bold">
+            <Sparkles className="w-4 h-4 mr-2" /> Load Sample Data
+          </Button>
         </div>
       </div>
     );
