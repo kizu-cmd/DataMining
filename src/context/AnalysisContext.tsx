@@ -213,129 +213,14 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
           const { frequentItemsets, rules } = runApriori(transactions, 2, 25, 4);
           processResults(transactions, frequentItemsets, rules);
 
-        // Extract unique items
-        const uniqueItems = new Set<string>();
-        transactions.forEach((t) => t.forEach((item) => uniqueItems.add(item)));
-        const menuItems: MenuItem[] = [...uniqueItems].map((name) => ({
-          id: name,
-          name,
-          icon: getIcon(name),
-          category: "Menu",
-        }));
-
-        // Multi-item frequent sets sorted by support
-        const multiSets = frequentItemsets
-          .filter((f) => f.items.length >= 2)
-          .sort((a, b) => b.support - a.support);
-
-        // Trending combos (top 6)
-        const trendingCombos: ComboPattern[] = multiSets.slice(0, 6).map((f, i) => ({
-          id: `combo-${i}`,
-          items: f.items,
-          support: f.support,
-          confidence: rules.find((r) => f.items.includes(r.consequent) && f.items.some((it) => r.antecedent.includes(it)))?.confidence || 0,
-        }));
-
-        // AI recommended combo (strongest by support * confidence)
-        const bestRule = rules.length > 0 ? rules[0] : null;
-        const bestSet = multiSets[0];
-        const aiRecommendedCombo: ComboPattern | null = bestSet
-          ? {
-              id: "ai-combo",
-              items: bestSet.items,
-              support: bestSet.support,
-              confidence: bestRule?.confidence || 0,
-              lift: bestRule?.lift || 0,
-              estimatedSalesIncrease: bestRule ? +(bestRule.lift * 3.5).toFixed(0) : 0,
-            }
-          : null;
-
-        // Promotions (top 3 rules with high lift)
-        const promoRules = [...rules].sort((a, b) => b.lift - a.lift).slice(0, 3);
-        const promotions: Promotion[] = promoRules.map((r, i) => ({
-          id: `promo-${i}`,
-          description: `Buy ${r.antecedent} → Get ${r.consequent} Discount`,
-          support: r.support,
-          confidence: r.confidence,
-          estimatedIncrease: +(r.lift * 2.8).toFixed(0),
-        }));
-
-        // Upsell map: for each item, find rules where it's the antecedent
-        const upsellMap: Record<string, { name: string; icon: string; confidence: number }[]> = {};
-        for (const item of menuItems) {
-          const matching = rules
-            .filter((r) => r.antecedent === item.name)
-            .sort((a, b) => b.confidence - a.confidence)
-            .slice(0, 4);
-          if (matching.length > 0) {
-            upsellMap[item.id] = matching.map((r) => ({
-              name: r.consequent,
-              icon: getIcon(r.consequent),
-              confidence: r.confidence,
-            }));
-          }
-        }
-
-        // Network graph
-        const nodeItems = [...uniqueItems].slice(0, 10);
-        const angleStep = (2 * Math.PI) / nodeItems.length;
-        const cx = 310, cy = 210, radius = 150;
-        const networkNodes: NetworkNode[] = nodeItems.map((name, i) => ({
-          id: name,
-          label: `${getIcon(name)} ${name}`,
-          x: cx + radius * Math.cos(angleStep * i - Math.PI / 2),
-          y: cy + radius * Math.sin(angleStep * i - Math.PI / 2),
-        }));
-
-        const networkEdges: NetworkEdge[] = [];
-        const edgeSeen = new Set<string>();
-        for (const r of rules) {
-          const parts = r.antecedent.split(" + ");
-          for (const ant of parts) {
-            const key = [ant, r.consequent].sort().join("||");
-            if (!edgeSeen.has(key) && nodeItems.includes(ant) && nodeItems.includes(r.consequent)) {
-              edgeSeen.add(key);
-              networkEdges.push({ source: ant, target: r.consequent, weight: Math.min(r.lift, 5) });
-            }
-          }
-        }
-
-        // Top combinations chart
-        const topCombinations = multiSets.slice(0, 8).map((f) => ({
-          name: f.items.join(" + "),
-          support: f.support,
-        }));
-
-        // Association rules table
-        const associationRules: AssociationRule[] = rules.slice(0, 15).map((r) => ({
-          antecedent: r.antecedent,
-          consequent: r.consequent,
-          support: r.support,
-          confidence: r.confidence,
-          lift: r.lift,
-        }));
-
-        setState({
-          totalTransactions: transactions.length,
-          patternsDiscovered: multiSets.length,
-          lastUpdated: new Date().toLocaleString(),
-          menuItems,
-          trendingCombos,
-          aiRecommendedCombo,
-          promotions,
-          upsellMap,
-          networkNodes,
-          networkEdges,
-          topCombinations,
-          associationRules,
-        });
       } catch (e) {
         console.error("Analysis error:", e);
       } finally {
         setIsAnalyzing(false);
       }
     }, 100);
-  }, []);
+    }
+  }, [processResults]);
 
   return (
     <AnalysisContext.Provider value={{ ...state, isAnalyzing, runAnalysis }}>
