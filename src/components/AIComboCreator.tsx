@@ -1,8 +1,8 @@
-import { aiRecommendedCombo } from "@/data/dashboard-data";
+import { useAnalysis } from "@/context/AnalysisContext";
 import { Sparkles, TrendingUp, Target, BarChart3, ArrowUpRight } from "lucide-react";
 
 export const AIComboCreator = () => {
-  const combo = aiRecommendedCombo;
+  const { aiRecommendedCombo: combo } = useAnalysis();
 
   return (
     <section className="mb-10">
@@ -20,7 +20,6 @@ export const AIComboCreator = () => {
         </div>
       ) : (
         <div className="promo-banner text-primary-foreground">
-          {/* Floating food decorations */}
           <div className="absolute top-3 right-4 text-5xl opacity-15 animate-float z-0">🍗</div>
           <div className="absolute bottom-3 right-20 text-4xl opacity-10 animate-float z-0" style={{ animationDelay: '1s' }}>🍝</div>
           <div className="absolute top-6 right-24 text-3xl opacity-10 animate-float z-0" style={{ animationDelay: '2s' }}>🥤</div>
@@ -36,10 +35,10 @@ export const AIComboCreator = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               {[
-                { label: "Support", value: `${combo.support}%`, icon: BarChart3, emoji: "📊" },
-                { label: "Confidence", value: `${combo.confidence}%`, icon: Target, emoji: "🎯" },
-                { label: "Lift", value: `${combo.lift}`, icon: TrendingUp, emoji: "📈" },
-                { label: "Est. Sales ↑", value: `+${combo.estimatedSalesIncrease}%`, icon: ArrowUpRight, emoji: "💰" },
+                { label: "Support", value: `${combo.support}%`, emoji: "📊" },
+                { label: "Confidence", value: `${combo.confidence}%`, emoji: "🎯" },
+                { label: "Lift", value: `${combo.lift}`, emoji: "📈" },
+                { label: "Est. Sales ↑", value: `+${combo.estimatedSalesIncrease}%`, emoji: "💰" },
               ].map((m) => (
                 <div key={m.label} className="bg-primary-foreground/10 backdrop-blur-sm rounded-xl p-3 border border-primary-foreground/10">
                   <span className="text-lg block mb-1">{m.emoji}</span>

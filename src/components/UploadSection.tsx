@@ -1,14 +1,20 @@
 import { useState } from "react";
-import { Upload, Play, FileSpreadsheet } from "lucide-react";
+import { Upload, Play, FileSpreadsheet, CheckCircle } from "lucide-react";
+import { useAnalysis } from "@/context/AnalysisContext";
 
 export const UploadSection = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [running, setRunning] = useState(false);
+  const { isAnalyzing, runAnalysis, totalTransactions } = useAnalysis();
+  const hasResults = totalTransactions > 0;
 
   const handleRun = () => {
     if (!file) return;
-    setRunning(true);
-    setTimeout(() => setRunning(false), 2000);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (text) runAnalysis(text);
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -44,17 +50,23 @@ export const UploadSection = () => {
           </label>
           <button
             onClick={handleRun}
-            disabled={!file || running}
+            disabled={!file || isAnalyzing}
             className="bg-primary text-primary-foreground font-extrabold text-sm py-3 px-8 rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 hover:shadow-lg"
           >
             <Play className="w-4 h-4" />
-            {running ? "Running Analysis…" : "Run Analysis"}
+            {isAnalyzing ? "Running Analysis…" : "Run Analysis"}
           </button>
         </div>
-        {running && (
+        {isAnalyzing && (
           <div className="mt-4 flex items-center gap-2 text-sm text-primary font-bold animate-pulse">
             <span className="text-xl">⏳</span>
             Processing transactions and discovering patterns…
+          </div>
+        )}
+        {hasResults && !isAnalyzing && (
+          <div className="mt-4 flex items-center gap-2 text-sm text-green-600 font-bold">
+            <CheckCircle className="w-4 h-4" />
+            Analysis complete! Dashboard updated with {totalTransactions} transactions.
           </div>
         )}
       </div>
