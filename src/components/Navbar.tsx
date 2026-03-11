@@ -3,7 +3,9 @@ import { BarChart3, MonitorSmartphone } from "lucide-react";
 
 export function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-primary/10">
+    <nav className="sticky top-0 z-50">
+      <div className="h-[3px] bg-gradient-to-r from-primary via-accent to-primary" />
+      <div className="bg-card/95 backdrop-blur-md border-b border-primary/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-8 flex items-center justify-end h-14">
         <div className="flex items-center gap-1">
           <NavLink
