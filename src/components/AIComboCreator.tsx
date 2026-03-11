@@ -1,5 +1,5 @@
 import { useAnalysis } from "@/context/AnalysisContext";
-import { Sparkles, TrendingUp, Target, BarChart3, ArrowUpRight } from "lucide-react";
+import { Sparkles, TrendingUp, Target, ArrowUpRight } from "lucide-react";
 
 export const AIComboCreator = () => {
   const { aiRecommendedCombo: combo } = useAnalysis();
