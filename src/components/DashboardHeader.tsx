@@ -1,4 +1,5 @@
 import { Activity, TrendingUp, Clock, ChevronRight } from "lucide-react";
+import jollibeeLogo from "@/assets/jollibee-logo.png";
 
 const metrics = [
   { label: "Total Transactions", value: "—", icon: Activity, emoji: "📊", gradient: "from-primary/10 to-primary/5" },
@@ -11,9 +12,7 @@ export const DashboardHeader = () => (
     {/* Top banner bar */}
     <div className="promo-banner mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
       <div className="relative z-10 flex items-center gap-4 flex-1">
-        <div className="bg-accent rounded-2xl p-3 shadow-lg">
-          <span className="text-4xl block animate-float">🐝</span>
-        </div>
+        <img src={jollibeeLogo} alt="Jollibee" className="h-12 sm:h-14 object-contain drop-shadow-lg" />
         <div className="text-primary-foreground">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-tight">
             Market Basket Intelligence
