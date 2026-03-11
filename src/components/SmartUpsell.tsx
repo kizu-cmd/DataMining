@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { menuItems, upsellMap } from "@/data/dashboard-data";
+import { useAnalysis } from "@/context/AnalysisContext";
 import { ShoppingCart, Plus } from "lucide-react";
 
 export const SmartUpsell = () => {
   const [selected, setSelected] = useState("");
+  const { menuItems, upsellMap } = useAnalysis();
   const suggestions = selected ? upsellMap[selected] || [] : [];
   const hasItems = menuItems.length > 0;
 
