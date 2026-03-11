@@ -1,5 +1,5 @@
 import { useAnalysis } from "@/context/AnalysisContext";
-import { Sparkles, TrendingUp, Target, BarChart3, ArrowUpRight } from "lucide-react";
+import { Sparkles, TrendingUp, Target, ArrowUpRight } from "lucide-react";
 
 export const AIComboCreator = () => {
   const { aiRecommendedCombo: combo } = useAnalysis();
@@ -7,9 +7,6 @@ export const AIComboCreator = () => {
   return (
     <section className="mb-10">
       <div className="kiosk-section-title">
-        <div className="bg-accent/20 p-2 rounded-xl">
-          <Sparkles className="w-5 h-5 text-accent-foreground" />
-        </div>
         <h2>✨ AI Combo Meal Creator</h2>
       </div>
       {!combo ? (

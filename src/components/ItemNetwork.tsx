@@ -1,5 +1,5 @@
 import { useAnalysis } from "@/context/AnalysisContext";
-import { Share2 } from "lucide-react";
+
 
 export const ItemNetwork = () => {
   const { networkNodes, networkEdges } = useAnalysis();
@@ -7,9 +7,6 @@ export const ItemNetwork = () => {
   return (
     <section className="mb-10">
       <div className="kiosk-section-title">
-        <div className="bg-primary/10 p-2 rounded-xl">
-          <Share2 className="w-5 h-5 text-primary" />
-        </div>
         <h2>🔗 Item Relationship Network</h2>
       </div>
       {networkNodes.length === 0 ? (

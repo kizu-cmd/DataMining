@@ -20,9 +20,6 @@ export const UploadSection = () => {
   return (
     <section className="mb-10">
       <div className="kiosk-section-title">
-        <div className="bg-primary/10 p-2 rounded-xl">
-          <Upload className="w-5 h-5 text-primary" />
-        </div>
         <h2>📤 Upload Transaction Data</h2>
       </div>
       <div className="kiosk-card p-6 bg-gradient-to-br from-card to-accent/5">

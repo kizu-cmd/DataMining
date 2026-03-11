@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAnalysis } from "@/context/AnalysisContext";
-import { ShoppingCart, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export const SmartUpsell = () => {
   const [selected, setSelected] = useState("");
@@ -11,9 +11,6 @@ export const SmartUpsell = () => {
   return (
     <section className="mb-10">
       <div className="kiosk-section-title">
-        <div className="bg-primary/10 p-2 rounded-xl">
-          <ShoppingCart className="w-5 h-5 text-primary" />
-        </div>
         <h2>🛒 Smart Upsell Predictor</h2>
       </div>
       <div className="kiosk-card p-6">

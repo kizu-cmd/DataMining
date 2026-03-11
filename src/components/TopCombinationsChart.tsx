@@ -1,6 +1,6 @@
 import { useAnalysis } from "@/context/AnalysisContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { BarChart3 } from "lucide-react";
+
 
 export const TopCombinationsChart = () => {
   const { topCombinations } = useAnalysis();
@@ -8,9 +8,6 @@ export const TopCombinationsChart = () => {
   return (
     <section className="mb-10">
       <div className="kiosk-section-title">
-        <div className="bg-accent/20 p-2 rounded-xl">
-          <BarChart3 className="w-5 h-5 text-accent-foreground" />
-        </div>
         <h2>📊 Top Item Combinations</h2>
       </div>
       {topCombinations.length === 0 ? (
