@@ -1,5 +1,5 @@
 import { useAnalysis } from "@/context/AnalysisContext";
-import { Gift, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export const PromotionOpportunities = () => {
   const { promotions } = useAnalysis();
