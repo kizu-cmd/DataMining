@@ -81,6 +81,26 @@ export default function Kiosk() {
 
   const clearCart = () => setCart([]);
 
+  const handlePlaceOrder = async () => {
+    if (cart.length === 0) return;
+    if (apiEnabled()) {
+      try {
+        const result = await placeOrder({
+          items: cart.map((i) => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+          total: cartTotal,
+        });
+        toast.success(`Order placed! ID: ${result.orderId}`);
+        clearCart();
+      } catch (err) {
+        console.error("Order failed:", err);
+        toast.error("Failed to place order. Please try again.");
+      }
+    } else {
+      toast.success("Order placed! (offline mode — no backend connected)");
+      clearCart();
+    }
+  };
+
   if (!hasData) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-8 py-16">
