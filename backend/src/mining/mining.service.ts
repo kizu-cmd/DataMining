@@ -35,6 +35,11 @@ export interface MiningWorkerOutput {
 export class MiningService {
   private readonly logger = new Logger(MiningService.name);
   private miningInProgress = false;
+  private pendingRun = false;
+  private readonly minNewOrders = Math.max(
+    1,
+    Number(process.env.MIN_NEW_ORDERS_FOR_MINING ?? 1),
+  );
 
   constructor(
     @InjectRepository(TransactionEntity)
@@ -48,24 +53,29 @@ export class MiningService {
   ) {}
 
   async maybeRunMining() {
-    const state = await this.getOrCreateState();
-    const raw = await this.transactionRepo
-      .createQueryBuilder('t')
-      .select('COUNT(DISTINCT t.orderId)', 'count')
-      .where('t.id > :lastId', { lastId: state.lastProcessedId })
-      .getRawOne<{ count: string }>();
-    const newCount = Number(raw?.count ?? 0);
+    const newCount = await this.countNewOrders();
+    if (newCount < this.minNewOrders) {
+      return;
+    }
 
-    if (newCount >= 100) {
-      if (this.miningInProgress) {
-        return;
-      }
-      this.miningInProgress = true;
-      try {
+    if (this.miningInProgress) {
+      this.pendingRun = true;
+      return;
+    }
+
+    this.miningInProgress = true;
+    try {
+      do {
+        this.pendingRun = false;
+        const count = await this.countNewOrders();
+        if (count < this.minNewOrders) {
+          break;
+        }
         await this.runMining('threshold');
-      } finally {
-        this.miningInProgress = false;
-      }
+      } while (this.pendingRun);
+    } finally {
+      this.miningInProgress = false;
+      this.pendingRun = false;
     }
   }
 
@@ -76,7 +86,7 @@ export class MiningService {
 
   async runMining(trigger: 'threshold' | 'cron') {
     const transactions = await this.transactionRepo.find({
-      select: ['orderId', 'item'],
+      select: ['id', 'orderId', 'item'],
       order: { id: 'ASC' },
     });
 
@@ -84,6 +94,8 @@ export class MiningService {
       this.logger.warn('No transactions available for mining.');
       return;
     }
+
+    const maxIncludedId = transactions[transactions.length - 1]?.id ?? 0;
 
     const payload = transactions.map((t) => ({
       order_id: t.orderId,
@@ -124,13 +136,8 @@ export class MiningService {
       await this.recommendationRepo.save(rows);
     }
 
-    const maxId = await this.transactionRepo
-      .createQueryBuilder('t')
-      .select('MAX(t.id)', 'max')
-      .getRawOne<{ max: string | null }>();
-
     const state = await this.getOrCreateState();
-    state.lastProcessedId = Number(maxId?.max ?? state.lastProcessedId);
+    state.lastProcessedId = maxIncludedId;
     await this.stateRepo.save(state);
 
     this.logger.log(`Mining complete via ${trigger}. Saved ${rules.length} recommendations.`);
@@ -224,6 +231,16 @@ export class MiningService {
     const raw = await this.transactionRepo
       .createQueryBuilder('t')
       .select('COUNT(DISTINCT t.orderId)', 'count')
+      .getRawOne<{ count: string }>();
+    return Number(raw?.count ?? 0);
+  }
+
+  private async countNewOrders() {
+    const state = await this.getOrCreateState();
+    const raw = await this.transactionRepo
+      .createQueryBuilder('t')
+      .select('COUNT(DISTINCT t.orderId)', 'count')
+      .where('t.id > :lastId', { lastId: state.lastProcessedId })
       .getRawOne<{ count: string }>();
     return Number(raw?.count ?? 0);
   }

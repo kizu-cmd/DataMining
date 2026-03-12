@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { runApriori, parseCSV, type Rule, type FrequentItemset } from "@/lib/apriori";
 import { apiEnabled, fetchAnalysis, ingestTransactions } from "@/lib/api";
 import type {
@@ -256,11 +256,14 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
     if (apiEnabled()) {
       // Use backend data so results reflect all ingested transactions
+      const batchId = typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
       const rows = transactions.flatMap((items, idx) =>
-        items.map((item) => ({ order_id: `csv-${idx}`, item })),
+        items.map((item) => ({ order_id: `csv-${batchId}-${idx}`, item })),
       );
 
-      ingestTransactions(rows, "replace")
+      ingestTransactions(rows, "append")
         .then(() => fetchAnalysis())
         .then((result) => {
           processResults({
@@ -290,6 +293,33 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
       }
     }, 100);
     }
+  }, [processResults]);
+
+  useEffect(() => {
+    if (!apiEnabled()) return;
+    let active = true;
+
+    const refresh = async () => {
+      try {
+        const result = await fetchAnalysis();
+        if (!active) return;
+        processResults({
+          frequentItemsets: result.frequentItemsets,
+          rules: result.rules,
+          totalTransactions: result.totalTransactions,
+          lastUpdated: result.lastUpdated ?? null,
+        });
+      } catch (err) {
+        console.warn("Auto refresh failed:", err);
+      }
+    };
+
+    refresh();
+    const interval = window.setInterval(refresh, 15000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
   }, [processResults]);
 
   return (
