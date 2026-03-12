@@ -1,8 +1,29 @@
+import { useState } from "react";
 import { useAnalysis } from "@/context/AnalysisContext";
 import { ArrowRight } from "lucide-react";
+import { toast } from "sonner";
+import { activatePromotion, apiEnabled } from "@/lib/api";
 
 export const PromotionOpportunities = () => {
   const { promotions } = useAnalysis();
+  const [activated, setActivated] = useState<Record<string, boolean>>({});
+  const [activating, setActivating] = useState<Record<string, boolean>>({});
+
+  const handleActivate = async (id: string, description: string) => {
+    if (activated[id] || activating[id]) return;
+    setActivating((prev) => ({ ...prev, [id]: true }));
+    try {
+      if (apiEnabled()) {
+        await activatePromotion({ id, description });
+      }
+      setActivated((prev) => ({ ...prev, [id]: true }));
+      toast.success(`Promotion activated: ${description}`);
+    } catch (err) {
+      toast.error("Failed to activate promotion. Please try again.");
+    } finally {
+      setActivating((prev) => ({ ...prev, [id]: false }));
+    }
+  };
 
   return (
     <section className="mb-10">
@@ -17,7 +38,10 @@ export const PromotionOpportunities = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {promotions.map((p) => (
+          {promotions.map((p) => {
+            const isActive = !!activated[p.id];
+            const isBusy = !!activating[p.id];
+            return (
             <div key={p.id} className="kiosk-card p-0 overflow-hidden">
               <div className="bg-gradient-to-r from-accent/20 to-accent/5 px-5 py-3 border-b">
                 <span className="text-lg">🏷️</span>
@@ -32,12 +56,30 @@ export const PromotionOpportunities = () => {
                   💰 +{p.estimatedIncrease}%
                   <span className="text-xs font-normal text-muted-foreground">est. sales increase</span>
                 </div>
-                <button className="mt-auto w-full border-2 border-primary text-primary text-sm font-extrabold py-2.5 px-4 rounded-xl hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center gap-2">
-                  Activate <ArrowRight className="w-4 h-4" />
+                <button
+                  type="button"
+                  onClick={() => handleActivate(p.id, p.description)}
+                  disabled={isActive || isBusy}
+                  className={`mt-auto w-full border-2 border-primary text-sm font-extrabold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 ${
+                    isActive
+                      ? "bg-primary text-primary-foreground cursor-default opacity-80"
+                      : "text-primary hover:bg-primary hover:text-primary-foreground"
+                  }`}
+                >
+                  {isActive ? (
+                    "Activated"
+                  ) : isBusy ? (
+                    "Activating..."
+                  ) : (
+                    <>
+                      Activate <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </section>

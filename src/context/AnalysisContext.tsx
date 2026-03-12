@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import { runApriori, parseCSV, type Rule, type FrequentItemset } from "@/lib/apriori";
-import { apiEnabled, runAnalysisOnServer, fetchAnalysis, type ApiAnalysisResult } from "@/lib/api";
+import { apiEnabled, runAnalysisOnServer, fetchAnalysis, ingestTransactions, type ApiAnalysisResult } from "@/lib/api";
 import type {
   MenuItem, ComboPattern, AssociationRule, Promotion,
   NetworkNode, NetworkEdge,
@@ -196,8 +196,12 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
     if (apiEnabled()) {
       // Use Python backend
-      runAnalysisOnServer(transactions)
-        .then((result) => {
+      const rows = transactions.flatMap((items, idx) =>
+        items.map((item) => ({ order_id: `csv-${idx}`, item })),
+      );
+
+      Promise.all([ingestTransactions(rows), runAnalysisOnServer(transactions)])
+        .then(([, result]) => {
           processResults(transactions, result.frequentItemsets, result.rules);
         })
         .catch((err) => {

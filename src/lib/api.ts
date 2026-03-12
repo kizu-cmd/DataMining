@@ -10,6 +10,10 @@
  *   POST /api/analysis           → { frequentItemsets, rules }  (body: { transactions })
  *   POST /api/orders             → { orderId, status }
  *   GET  /api/upsell?items=a,b   → [{ name, icon, confidence }]
+ *   POST /api/promotions/activate → { status }
+ *   POST /api/upsell/accept       → { status }
+ *   POST /api/combos/create       → { status }
+ *   POST /api/orders/bulk         → { inserted }
  */
 
 // ⚡ CHANGE THIS to your Python backend URL
@@ -81,6 +85,19 @@ export async function placeOrder(order: OrderPayload): Promise<OrderResponse> {
   });
 }
 
+// ── Bulk Transactions ─────────────────────────────
+export interface BulkTransactionRow {
+  order_id: string;
+  item: string;
+}
+
+export async function ingestTransactions(rows: BulkTransactionRow[]): Promise<{ inserted: number }> {
+  return request<{ inserted: number }>("/api/orders/bulk", {
+    method: "POST",
+    body: JSON.stringify({ rows }),
+  });
+}
+
 // ── Upsell ──────────────────────────────────────────────────
 export interface UpsellSuggestion {
   name: string;
@@ -91,4 +108,43 @@ export interface UpsellSuggestion {
 export async function fetchUpsellSuggestions(itemNames: string[]): Promise<UpsellSuggestion[]> {
   const params = new URLSearchParams({ items: itemNames.join(",") });
   return request<UpsellSuggestion[]>(`/api/upsell?${params}`);
+}
+
+export interface UpsellAcceptPayload {
+  baseItem: string;
+  suggestedItem: string;
+}
+
+export async function acceptUpsellSuggestion(payload: UpsellAcceptPayload): Promise<{ status: string }> {
+  return request<{ status: string }>("/api/upsell/accept", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export interface CreateComboPayload {
+  items: string[];
+  support: number;
+  confidence: number;
+  source?: string;
+}
+
+export async function createCombo(payload: CreateComboPayload): Promise<{ status: string }> {
+  return request<{ status: string }>("/api/combos/create", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+// ── Promotions ─────────────────────────────────────────────
+export interface ActivatePromotionPayload {
+  id: string;
+  description: string;
+}
+
+export async function activatePromotion(payload: ActivatePromotionPayload): Promise<{ status: string }> {
+  return request<{ status: string }>("/api/promotions/activate", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
