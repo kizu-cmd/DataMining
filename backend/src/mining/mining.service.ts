@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { spawn } from 'child_process';
 import { join } from 'path';
 import { TransactionEntity } from '../transactions/transaction.entity';
 import { RecommendationEntity } from '../recommendations/recommendation.entity';
 import { MiningStateEntity } from './mining-state.entity';
+import { FrequentItemsetEntity } from './frequent-itemset.entity';
 
 interface MiningResultRow {
   antecedents: string[];
@@ -14,6 +15,8 @@ interface MiningResultRow {
   support: number;
   confidence: number;
   lift: number;
+  leverage: number;
+  conviction: number;
   score: number;
 }
 
@@ -31,24 +34,38 @@ export interface MiningWorkerOutput {
 @Injectable()
 export class MiningService {
   private readonly logger = new Logger(MiningService.name);
+  private miningInProgress = false;
 
   constructor(
     @InjectRepository(TransactionEntity)
     private readonly transactionRepo: Repository<TransactionEntity>,
     @InjectRepository(RecommendationEntity)
     private readonly recommendationRepo: Repository<RecommendationEntity>,
+    @InjectRepository(FrequentItemsetEntity)
+    private readonly itemsetRepo: Repository<FrequentItemsetEntity>,
     @InjectRepository(MiningStateEntity)
     private readonly stateRepo: Repository<MiningStateEntity>,
   ) {}
 
   async maybeRunMining() {
     const state = await this.getOrCreateState();
-    const newCount = await this.transactionRepo.count({
-      where: { id: MoreThan(state.lastProcessedId) },
-    });
+    const raw = await this.transactionRepo
+      .createQueryBuilder('t')
+      .select('COUNT(DISTINCT t.orderId)', 'count')
+      .where('t.id > :lastId', { lastId: state.lastProcessedId })
+      .getRawOne<{ count: string }>();
+    const newCount = Number(raw?.count ?? 0);
 
     if (newCount >= 100) {
-      await this.runMining('threshold');
+      if (this.miningInProgress) {
+        return;
+      }
+      this.miningInProgress = true;
+      try {
+        await this.runMining('threshold');
+      } finally {
+        this.miningInProgress = false;
+      }
     }
   }
 
@@ -75,8 +92,22 @@ export class MiningService {
 
     const output = await this.runPythonWorker(payload);
     const rules = output.rules;
+    const itemsets = output.frequent_itemsets;
 
     await this.recommendationRepo.clear();
+    await this.itemsetRepo.clear();
+
+    if (itemsets.length > 0) {
+      const itemsetRows = itemsets.map((itemset) =>
+        this.itemsetRepo.create({
+          itemsJson: JSON.stringify(itemset.items),
+          support: itemset.support,
+          count: itemset.count,
+        }),
+      );
+      await this.itemsetRepo.save(itemsetRows);
+    }
+
     if (rules.length > 0) {
       const rows = rules.map((rule) =>
         this.recommendationRepo.create({
@@ -85,6 +116,8 @@ export class MiningService {
           support: rule.support,
           confidence: rule.confidence,
           lift: rule.lift,
+          leverage: rule.leverage,
+          conviction: rule.conviction,
           score: rule.score,
         }),
       );
@@ -101,6 +134,42 @@ export class MiningService {
     await this.stateRepo.save(state);
 
     this.logger.log(`Mining complete via ${trigger}. Saved ${rules.length} recommendations.`);
+  }
+
+  async getLatestAnalysis() {
+    const [rules, itemsets, totalTransactions, state] = await Promise.all([
+      this.recommendationRepo.find({ order: { score: 'DESC' } }),
+      this.itemsetRepo.find({ order: { support: 'DESC' } }),
+      this.countDistinctOrders(),
+      this.getOrCreateState(),
+    ]);
+
+    const lastUpdated = state.updatedAt ? new Date(state.updatedAt).toISOString() : null;
+
+    return {
+      totalTransactions,
+      lastUpdated,
+      frequentItemsets: itemsets.map((row) => ({
+        items: JSON.parse(row.itemsJson),
+        support: row.support,
+        count: row.count,
+      })),
+      rules: rules.map((row) => ({
+        antecedent: JSON.parse(row.antecedentsJson).join(' + '),
+        consequent: JSON.parse(row.consequentsJson).join(' + '),
+        support: row.support,
+        confidence: row.confidence,
+        lift: row.lift,
+        leverage: row.leverage ?? 0,
+        conviction: row.conviction ?? 0,
+      })),
+    };
+  }
+
+  async resetState() {
+    await this.recommendationRepo.clear();
+    await this.itemsetRepo.clear();
+    await this.stateRepo.clear();
   }
 
   runPythonWorker(payload: unknown): Promise<MiningWorkerOutput> {
@@ -149,5 +218,13 @@ export class MiningService {
       state = await this.stateRepo.save(state);
     }
     return state;
+  }
+
+  private async countDistinctOrders() {
+    const raw = await this.transactionRepo
+      .createQueryBuilder('t')
+      .select('COUNT(DISTINCT t.orderId)', 'count')
+      .getRawOne<{ count: string }>();
+    return Number(raw?.count ?? 0);
   }
 }

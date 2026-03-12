@@ -6,7 +6,7 @@
  * 
  * Example Python backend (FastAPI):
  *   GET  /api/menu-items        → [{ id, name, icon, category, price }]
- *   GET  /api/analysis           → { frequentItemsets, rules }
+ *   GET  /api/analysis           → { frequentItemsets, rules, totalTransactions, lastUpdated }
  *   POST /api/analysis           → { frequentItemsets, rules }  (body: { transactions })
  *   POST /api/orders             → { orderId, status }
  *   GET  /api/upsell?items=a,b   → [{ name, icon, confidence }]
@@ -53,7 +53,9 @@ export async function fetchMenuItems(): Promise<ApiMenuItem[]> {
 // ── Analysis ────────────────────────────────────────────────
 export interface ApiAnalysisResult {
   frequentItemsets: { items: string[]; support: number; count: number }[];
-  rules: { antecedent: string; consequent: string; support: number; confidence: number; lift: number }[];
+  rules: { antecedent: string; consequent: string; support: number; confidence: number; lift: number; leverage: number; conviction: number }[];
+  totalTransactions?: number;
+  lastUpdated?: string | null;
 }
 
 export async function fetchAnalysis(): Promise<ApiAnalysisResult> {
@@ -91,10 +93,13 @@ export interface BulkTransactionRow {
   item: string;
 }
 
-export async function ingestTransactions(rows: BulkTransactionRow[]): Promise<{ inserted: number }> {
-  return request<{ inserted: number }>("/api/orders/bulk", {
+export async function ingestTransactions(
+  rows: BulkTransactionRow[],
+  mode: "append" | "replace" = "replace"
+): Promise<{ inserted: number; mode: string }> {
+  return request<{ inserted: number; mode: string }>("/api/orders/bulk", {
     method: "POST",
-    body: JSON.stringify({ rows }),
+    body: JSON.stringify({ rows, mode }),
   });
 }
 

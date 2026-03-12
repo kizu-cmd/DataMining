@@ -20,6 +20,8 @@ export type AssociationRule = {
   support: number;
   confidence: number;
   lift: number;
+  leverage: number;
+  conviction: number;
 };
 
 export type Promotion = {

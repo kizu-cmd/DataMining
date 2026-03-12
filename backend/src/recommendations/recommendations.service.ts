@@ -18,6 +18,8 @@ export class RecommendationsService {
       support: row.support,
       confidence: row.confidence,
       lift: row.lift,
+      leverage: row.leverage ?? 0,
+      conviction: row.conviction ?? 0,
       score: row.score,
     }));
   }

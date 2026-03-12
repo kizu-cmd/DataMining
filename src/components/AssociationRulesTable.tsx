@@ -35,6 +35,8 @@ export const AssociationRulesTable = () => {
                 <TableHead className="text-right font-extrabold">Support</TableHead>
                 <TableHead className="text-right font-extrabold">Confidence</TableHead>
                 <TableHead className="text-right font-extrabold">Lift</TableHead>
+                <TableHead className="text-right font-extrabold">Leverage</TableHead>
+                <TableHead className="text-right font-extrabold">Conviction</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -49,6 +51,10 @@ export const AssociationRulesTable = () => {
                     <span className="kiosk-badge bg-primary/10 text-primary">{r.confidence}%</span>
                   </TableCell>
                   <TableCell className="text-right font-extrabold">{r.lift}</TableCell>
+                  <TableCell className="text-right">{r.leverage}</TableCell>
+                  <TableCell className="text-right">
+                    {Number.isFinite(r.conviction) ? r.conviction : "∞"}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

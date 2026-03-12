@@ -5,4 +5,5 @@ export class TransactionRowDto {
 
 export class BulkTransactionsDto {
   rows: TransactionRowDto[];
+  mode?: 'append' | 'replace';
 }

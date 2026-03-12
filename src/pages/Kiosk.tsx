@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAnalysis } from "@/context/AnalysisContext";
 import { ShoppingCart, Plus, Minus, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,9 +30,10 @@ function getPrice(name: string): number {
 }
 
 export default function Kiosk() {
-  const { menuItems, upsellMap, trendingCombos } = useAnalysis();
+  const { menuItems, upsellMap, trendingCombos, aiRecommendedCombo } = useAnalysis();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
+  const [comboAdded, setComboAdded] = useState(false);
 
   const hasData = menuItems.length > 0;
 
@@ -79,7 +80,14 @@ export default function Kiosk() {
     );
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    setComboAdded(false);
+  };
+
+  useEffect(() => {
+    setComboAdded(false);
+  }, [aiRecommendedCombo?.items.join("|")]);
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0) return;
@@ -99,6 +107,16 @@ export default function Kiosk() {
       toast.success("Order placed! (offline mode — no backend connected)");
       clearCart();
     }
+  };
+
+  const handleAddComboToCart = () => {
+    if (!aiRecommendedCombo || comboAdded) return;
+    aiRecommendedCombo.items.forEach((itemName) => {
+      const mi = menuItems.find((m) => m.name === itemName);
+      if (mi) addToCart(mi.id, mi.name, mi.icon);
+    });
+    setComboAdded(true);
+    toast.success(`Added combo: ${aiRecommendedCombo.items.join(" + ")}`);
   };
 
   if (!hasData) {
@@ -268,6 +286,41 @@ export default function Kiosk() {
                     </div>
                   </div>
                 )}
+
+                {/* AI Combo Meal Creator */}
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-accent" /> AI Combo Meal Creator
+                  </p>
+                  {!aiRecommendedCombo ? (
+                    <p className="text-xs text-muted-foreground">
+                      Upload transaction data to generate a combo suggestion.
+                    </p>
+                  ) : (
+                    <div className="kiosk-card p-3">
+                      <p className="text-sm font-bold mb-2">{aiRecommendedCombo.items.join(" + ")}</p>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <span className="kiosk-badge bg-accent/15 text-accent-foreground">
+                          {aiRecommendedCombo.support}% support
+                        </span>
+                        <span className="kiosk-badge bg-primary/10 text-primary">
+                          {aiRecommendedCombo.confidence}% confidence
+                        </span>
+                        <span className="kiosk-badge bg-muted text-muted-foreground">
+                          {aiRecommendedCombo.lift} lift
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={handleAddComboToCart}
+                        disabled={comboAdded}
+                        className="w-full text-xs font-extrabold h-9 rounded-lg"
+                      >
+                        {comboAdded ? "Combo Added" : "Add Combo to Order"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
                 <div className="mt-4 pt-4 border-t space-y-2">
                   <div className="flex justify-between text-sm">

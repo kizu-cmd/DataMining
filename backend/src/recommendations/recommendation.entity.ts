@@ -20,6 +20,12 @@ export class RecommendationEntity {
   @Column({ type: 'float' })
   lift: number;
 
+  @Column({ type: 'float', nullable: true, default: 0 })
+  leverage: number | null;
+
+  @Column({ type: 'float', nullable: true, default: 0 })
+  conviction: number | null;
+
   @Column({ type: 'float' })
   score: number;
 

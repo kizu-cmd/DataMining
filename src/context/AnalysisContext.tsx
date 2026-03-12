@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import { runApriori, parseCSV, type Rule, type FrequentItemset } from "@/lib/apriori";
-import { apiEnabled, runAnalysisOnServer, fetchAnalysis, ingestTransactions, type ApiAnalysisResult } from "@/lib/api";
+import { apiEnabled, fetchAnalysis, ingestTransactions } from "@/lib/api";
 import type {
   MenuItem, ComboPattern, AssociationRule, Promotion,
   NetworkNode, NetworkEdge,
@@ -66,10 +66,27 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const processResults = useCallback(
-    (transactions: string[][], frequentItemsets: FrequentItemset[], rules: Rule[]) => {
-        // Extract unique items
+    (payload: {
+      transactions?: string[][];
+      frequentItemsets: FrequentItemset[];
+      rules: Rule[];
+      totalTransactions?: number;
+      lastUpdated?: string | null;
+    }) => {
+        const transactions = payload.transactions ?? [];
+        const frequentItemsets = payload.frequentItemsets ?? [];
+        const rules = payload.rules ?? [];
+
         const uniqueItems = new Set<string>();
-        transactions.forEach((t) => t.forEach((item) => uniqueItems.add(item)));
+        if (transactions.length > 0) {
+          transactions.forEach((t) => t.forEach((item) => uniqueItems.add(item)));
+        } else {
+          frequentItemsets.forEach((f) => f.items.forEach((item) => uniqueItems.add(item)));
+          rules.forEach((r) => {
+            r.antecedent.split(" + ").forEach((item) => uniqueItems.add(item));
+            r.consequent.split(" + ").forEach((item) => uniqueItems.add(item));
+          });
+        }
         const menuItems: MenuItem[] = [...uniqueItems].map((name) => ({
           id: name,
           name,
@@ -117,16 +134,29 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
         // Upsell map
         const upsellMap: Record<string, { name: string; icon: string; confidence: number }[]> = {};
         for (const item of menuItems) {
+          const suggestions = new Map<string, { name: string; icon: string; confidence: number }>();
           const matching = rules
-            .filter((r) => r.antecedent === item.name)
-            .sort((a, b) => b.confidence - a.confidence)
-            .slice(0, 4);
-          if (matching.length > 0) {
-            upsellMap[item.id] = matching.map((r) => ({
-              name: r.consequent,
-              icon: getIcon(r.consequent),
-              confidence: r.confidence,
-            }));
+            .filter((r) => r.antecedent.split(" + ").includes(item.name))
+            .sort((a, b) => b.confidence - a.confidence);
+
+          for (const rule of matching) {
+            const consequents = rule.consequent.split(" + ").map((c) => c.trim()).filter(Boolean);
+            for (const consequent of consequents) {
+              if (consequent === item.name) continue;
+              const existing = suggestions.get(consequent);
+              if (!existing || rule.confidence > existing.confidence) {
+                suggestions.set(consequent, {
+                  name: consequent,
+                  icon: getIcon(consequent),
+                  confidence: rule.confidence,
+                });
+              }
+            }
+          }
+
+          const list = [...suggestions.values()].sort((a, b) => b.confidence - a.confidence).slice(0, 4);
+          if (list.length > 0) {
+            upsellMap[item.id] = list;
           }
         }
 
@@ -143,13 +173,34 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
 
         const networkEdges: NetworkEdge[] = [];
         const edgeSeen = new Set<string>();
+        const pushEdge = (source: string, target: string, weight: number) => {
+          if (source === target) return;
+          if (!nodeItems.includes(source) || !nodeItems.includes(target)) return;
+          const key = [source, target].sort().join("||");
+          if (edgeSeen.has(key)) return;
+          edgeSeen.add(key);
+          networkEdges.push({ source, target, weight });
+        };
+
         for (const r of rules) {
-          const parts = r.antecedent.split(" + ");
-          for (const ant of parts) {
-            const key = [ant, r.consequent].sort().join("||");
-            if (!edgeSeen.has(key) && nodeItems.includes(ant) && nodeItems.includes(r.consequent)) {
-              edgeSeen.add(key);
-              networkEdges.push({ source: ant, target: r.consequent, weight: Math.min(r.lift, 5) });
+          const antecedents = r.antecedent.split(" + ").map((a) => a.trim()).filter(Boolean);
+          const consequents = r.consequent.split(" + ").map((c) => c.trim()).filter(Boolean);
+          const weight = Math.max(0.6, Math.min(r.lift || 0, 5));
+          for (const ant of antecedents) {
+            for (const cons of consequents) {
+              pushEdge(ant, cons, weight);
+            }
+          }
+        }
+
+        if (networkEdges.length === 0) {
+          for (const itemset of multiSets) {
+            const items = itemset.items;
+            const weight = Math.max(0.4, Math.min(itemset.support / 10, 4));
+            for (let i = 0; i < items.length; i++) {
+              for (let j = i + 1; j < items.length; j++) {
+                pushEdge(items[i], items[j], weight);
+              }
             }
           }
         }
@@ -167,12 +218,21 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
           support: r.support,
           confidence: r.confidence,
           lift: r.lift,
+          leverage: r.leverage,
+          conviction: r.conviction,
         }));
 
+        const totalTransactions = payload.totalTransactions ?? transactions.length;
+        const lastUpdated = payload.lastUpdated
+          ? new Date(payload.lastUpdated).toLocaleString()
+          : (transactions.length > 0 || frequentItemsets.length > 0 || rules.length > 0)
+            ? new Date().toLocaleString()
+            : null;
+
         setState({
-          totalTransactions: transactions.length,
+          totalTransactions,
           patternsDiscovered: multiSets.length,
-          lastUpdated: new Date().toLocaleString(),
+          lastUpdated,
           menuItems,
           trendingCombos,
           aiRecommendedCombo,
@@ -195,19 +255,25 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
     }
 
     if (apiEnabled()) {
-      // Use Python backend
+      // Use backend data so results reflect all ingested transactions
       const rows = transactions.flatMap((items, idx) =>
         items.map((item) => ({ order_id: `csv-${idx}`, item })),
       );
 
-      Promise.all([ingestTransactions(rows), runAnalysisOnServer(transactions)])
-        .then(([, result]) => {
-          processResults(transactions, result.frequentItemsets, result.rules);
+      ingestTransactions(rows, "replace")
+        .then(() => fetchAnalysis())
+        .then((result) => {
+          processResults({
+            frequentItemsets: result.frequentItemsets,
+            rules: result.rules,
+            totalTransactions: result.totalTransactions,
+            lastUpdated: result.lastUpdated ?? null,
+          });
         })
         .catch((err) => {
           console.warn("API failed, falling back to in-browser analysis:", err);
           const { frequentItemsets, rules } = runApriori(transactions, 2, 25, 4);
-          processResults(transactions, frequentItemsets, rules);
+          processResults({ transactions, frequentItemsets, rules });
         })
         .finally(() => setIsAnalyzing(false));
     } else {
@@ -215,7 +281,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
       setTimeout(() => {
         try {
           const { frequentItemsets, rules } = runApriori(transactions, 2, 25, 4);
-          processResults(transactions, frequentItemsets, rules);
+          processResults({ transactions, frequentItemsets, rules });
 
       } catch (e) {
         console.error("Analysis error:", e);

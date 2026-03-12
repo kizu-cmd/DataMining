@@ -38,6 +38,12 @@ export class TransactionsService {
   }
 
   async ingestTransactions(payload: BulkTransactionsDto) {
+    const mode = payload?.mode === 'append' ? 'append' : 'replace';
+    if (mode === 'replace') {
+      await this.transactionRepo.clear();
+      await this.miningService.resetState();
+    }
+
     const rows = (payload?.rows ?? [])
       .filter((r) => r?.order_id && r?.item)
       .map((r) =>
@@ -52,6 +58,6 @@ export class TransactionsService {
       await this.miningService.maybeRunMining();
     }
 
-    return { inserted: rows.length };
+    return { inserted: rows.length, mode };
   }
 }

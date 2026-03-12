@@ -56,10 +56,16 @@ export const SmartUpsell = () => {
               className="w-full sm:w-72 bg-background border-2 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
             >
               <option value="">🍽️ Tap to select a menu item…</option>
-              {menuItems.filter((m) => upsellMap[m.id]).map((m) => (
+              {menuItems.map((m) => (
                 <option key={m.id} value={m.id}>{m.icon} {m.name}</option>
               ))}
             </select>
+
+            {selected && suggestions.length === 0 && (
+              <p className="text-xs text-muted-foreground mt-4">
+                No add-on suggestions yet for this item. Try another menu item.
+              </p>
+            )}
 
             {suggestions.length > 0 && (
               <>

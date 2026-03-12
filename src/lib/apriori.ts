@@ -14,6 +14,8 @@ export interface Rule {
   support: number;
   confidence: number;
   lift: number;
+  leverage: number;
+  conviction: number;
 }
 
 function getItemCounts(transactions: Transaction[]): Map<string, number> {
@@ -117,12 +119,23 @@ export function runApriori(
             (itemset.support / 100) /
             ((antecedentFreq.support / 100) * (consequentFreq.support / 100))
           ).toFixed(2);
+          const supportFrac = itemset.support / 100;
+          const antecedentSupport = antecedentFreq.support / 100;
+          const consequentSupport = consequentFreq.support / 100;
+          const confidenceFrac = confidence / 100;
+          const leverage = +(supportFrac - antecedentSupport * consequentSupport).toFixed(4);
+          const conviction =
+            confidenceFrac >= 0.999
+              ? Number.POSITIVE_INFINITY
+              : +(((1 - consequentSupport) / (1 - confidenceFrac))).toFixed(2);
           rules.push({
             antecedent: antecedentItems.join(" + "),
             consequent,
             support: itemset.support,
             confidence,
             lift,
+            leverage,
+            conviction,
           });
         }
       }

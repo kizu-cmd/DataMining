@@ -95,7 +95,7 @@ def run_mining(transactions):
     if rules.empty:
         return {"frequent_itemsets": itemsets_out, "rules": []}
 
-    rules = rules[["antecedents", "consequents", "support", "confidence", "lift"]]
+    rules = rules[["antecedents", "consequents", "support", "confidence", "lift", "leverage", "conviction"]]
     rules = score_rules(rules)
 
     top = rules.head(10)
@@ -103,12 +103,17 @@ def run_mining(transactions):
     for _, row in top.iterrows():
         support_frac = float(row["support"])
         confidence_frac = float(row["confidence"])
+        conviction_val = float(row["conviction"])
+        if conviction_val == float("inf") or conviction_val != conviction_val:
+            conviction_val = 999.0
         rules_out.append({
             "antecedents": sorted(list(row["antecedents"])),
             "consequents": sorted(list(row["consequents"])),
             "support": round(support_frac * 100, 4),
             "confidence": round(confidence_frac * 100, 4),
             "lift": float(row["lift"]),
+            "leverage": round(float(row["leverage"]), 6),
+            "conviction": round(conviction_val, 6),
             "score": float(row["score"]),
         })
 

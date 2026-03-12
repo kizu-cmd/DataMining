@@ -13,9 +13,9 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 }
 
 export function exportRulesCSV(rules: AssociationRule[]) {
-  const header = "Antecedent,Consequent,Support (%),Confidence (%),Lift";
+  const header = "Antecedent,Consequent,Support (%),Confidence (%),Lift,Leverage,Conviction";
   const rows = rules.map(
-    (r) => `"${r.antecedent}","${r.consequent}",${r.support},${r.confidence},${r.lift}`
+    (r) => `"${r.antecedent}","${r.consequent}",${r.support},${r.confidence},${r.lift},${r.leverage},${Number.isFinite(r.conviction) ? r.conviction : "Infinity"}`
   );
   downloadFile([header, ...rows].join("\n"), "association-rules.csv", "text/csv");
 }
@@ -46,9 +46,9 @@ export function exportFullReport(
     ),
     "",
     "=== ASSOCIATION RULES ===",
-    "Antecedent → Consequent | Support | Confidence | Lift",
+    "Antecedent → Consequent | Support | Confidence | Lift | Leverage | Conviction",
     ...rules.map(
-      (r) => `${r.antecedent} → ${r.consequent} | ${r.support}% | ${r.confidence}% | ${r.lift}`
+      (r) => `${r.antecedent} → ${r.consequent} | ${r.support}% | ${r.confidence}% | ${r.lift} | ${r.leverage} | ${Number.isFinite(r.conviction) ? r.conviction : "∞"}`
     ),
   ];
   downloadFile(lines.join("\n"), "mba-full-report.txt", "text/plain");
